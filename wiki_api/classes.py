@@ -13,11 +13,12 @@ import time
 
 class Getter:
 
-    def __init__(self, page_title):
+    def __init__(self, page_title, request_size=1000):
 
         self.n_bins = 25
+        self.edits_per_bin = 50
         self.hist_color = 'lightcyan'
-        self.edit_size_request = 800
+        self.edit_size_request = request_size
 
         self.title = page_title
         self.formatted_title = self._format_title()
@@ -25,7 +26,9 @@ class Getter:
         self.response = self._simple_get()
         self.soup = BeautifulSoup(self.response, 'html.parser')
         self.raw_dates = []
+        self.raw_edit_strs = []
         self.datetimes = []
+        self.error_log = ErrorLog()
         self.dates = []
         self.bytes = []
         self._parse_soup()
@@ -36,7 +39,7 @@ class Getter:
         return self.title.replace(" ", "_")
 
     def _simple_get(self):
-        
+
         """
         Simple but robust url get. Copied from some stack overflow. Unfortunately, link lost.
         :param url:
@@ -66,7 +69,6 @@ class Getter:
 
     def _parse_soup(self):
 
-        count = 0
         for idx, child in enumerate(self.soup('li')):
 
             text = child.text
@@ -79,14 +81,17 @@ class Getter:
 
                 byte_str = split_out[2].split("bytes ")[-1]
                 byte_str = byte_str.replace(",", "")
-                bytes = int(byte_str)
+                try:
+                    bytes = int(byte_str)
 
-                self.raw_dates.append(datetime_str)
-                self.datetimes.append(dt)
-                self.dates.append(dt)
-                self.bytes.append(bytes)
-
-        print("count: ", count)
+                    self.raw_dates.append(datetime_str)
+                    self.raw_edit_strs.append(text)
+                    self.datetimes.append(dt)
+                    self.dates.append(dt)
+                    self.bytes.append(bytes)
+                except ValueError:
+                    self.error_log.add(idx, child, byte_str, datetime_str)
+        self.n_bins = int(len(self.bytes)/self.edits_per_bin)
 
     def _format_dates(self):
         self.dates = [datestr2num(rd) for rd in self.raw_dates]
@@ -114,9 +119,12 @@ class Getter:
         return ticks, labels
 
     def __repr__(self):
-        return "{0}\nmean bytes: {1}\nstd bytes: {2}".format(self.title,
-                                                             np.mean(self.bytes),
-                                                             np.std(self.bytes))
+        return "{0}\ncaptured edits: {1}\nfiltered edits: {2}\notsu: {3}\nnewest edit: {4}\noldest edit: {5}".format(self.title,
+                                                                                                                     len(self.bytes),
+                                                                                                                     self.error_log.size(),
+                                                                                                                     self.otsu_thresh,
+                                                                                                                     self.raw_edit_strs[0],
+                                                                                                                     self.raw_edit_strs[-1])
 
     def plot(self):
 
@@ -127,7 +135,7 @@ class Getter:
             ax0.scatter(d, abs(b), c=color_list[b > 0], s=4)
         ticks, labels = self._create_ticks()
         ax0.set_xticks(ticks)
-        ax0.set_xticklabels(labels)
+        ax0.set_xticklabels(labels, rotation=45)
         ax0.set_ylim(bottom=0)
         ax0.set_ylabel("Edit Size (bytes)")
         ax0.set_title(self.title)
@@ -143,3 +151,25 @@ class Getter:
         ax1.tick_params(labelcolor=self.hist_color)
         ax1.set_ylabel("Frequency of Edits")
         plt.show()
+
+class ErrorLog:
+
+    def __init__(self):
+        self.idxs = []
+        self.children = []
+        self.byte_strs = []
+        self.datetimes = []
+
+    def add(self, idx, child, byte_str, datetime):
+        self.idxs.append(idx)
+        self.children.append(child)
+        self.byte_strs.append(byte_str)
+        self.datetimes.append(datetime)
+
+    def size(self):
+        assert len(self.idxs)==len(self.children)==len(self.byte_strs)==len(self.datetimes), "ErrorLog lists are not the same length"
+        return len(self.idxs)
+
+class Edit:
+
+    def __init__(self):

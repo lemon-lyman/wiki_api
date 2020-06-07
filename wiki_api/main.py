@@ -3,10 +3,17 @@ import sys
 
 if __name__ == "__main__":
 
-    if len(sys.argv) > 1:
-        page_title = sys.argv[1]
-    else:
-        page_title = "National Basketball Association"
+    page_title = "National Basketball Association"
 
-    out = classes.Getter(page_title)
+    if len(sys.argv) == 3:
+        page_title = sys.argv[1]
+        request_size = sys.argv[2]
+        out = classes.Getter(page_title, request_size=request_size)
+    elif len(sys.argv) == 2:
+        page_title = sys.argv[1]
+        out = classes.Getter(page_title)
+    else:
+        out = classes.Getter(page_title)
+
+    print(out)
     out.plot()
