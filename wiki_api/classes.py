@@ -17,7 +17,7 @@ class Getter:
 
         self.n_bins = 25
         self.hist_color = 'lightcyan'
-        self.edit_size_request = 1000
+        self.edit_size_request = 800
 
         self.title = page_title
         self.formatted_title = self._format_title()
@@ -36,6 +36,7 @@ class Getter:
         return self.title.replace(" ", "_")
 
     def _simple_get(self):
+        
         """
         Simple but robust url get. Copied from some stack overflow. Unfortunately, link lost.
         :param url:
