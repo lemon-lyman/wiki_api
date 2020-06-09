@@ -17,6 +17,10 @@ class Getter:
 
         self.n_bins = 25
         self.edits_per_bin = 50
+        self.vandalism_response_limit = 2
+        self.vandalism_threshold = 2000
+        self.vandalism_similarity = 0.95
+
         self.hist_color = 'lightcyan'
         self.edit_size_request = request_size
 
@@ -31,6 +35,7 @@ class Getter:
         self.error_log = ErrorLog()
         self.dates = []
         self.bytes = []
+        self.vandalism_flag = []
         self._parse_soup()
         self._format_dates()
         self._filter_data()
@@ -89,6 +94,8 @@ class Getter:
                     self.datetimes.append(dt)
                     self.dates.append(dt)
                     self.bytes.append(bytes)
+                    self.vandalism_flag.append(False)
+
                 except ValueError:
                     self.error_log.add(idx, child, byte_str, datetime_str)
         self.n_bins = int(len(self.bytes)/self.edits_per_bin)
@@ -98,7 +105,7 @@ class Getter:
 
     def _filter_data(self):
 
-        self.otsu_thresh = threshold_otsu(abs(np.array(self.bytes)))
+        self.otsu_thresh = 0.5*threshold_otsu(abs(np.array(self.bytes)))
 
         ii = 0
         while ii < len(self.bytes):
@@ -107,6 +114,42 @@ class Getter:
                 self.dates.pop(ii)
             else:
                 ii += 1
+
+    def _filter_vandalism(self):
+        """
+        doesn't work lol
+        :return:
+        """
+
+        for ii in range(len(self.bytes)):
+            if abs(self.bytes[ii]) > self.vandalism_threshold:
+
+                while True:
+
+                    offset = 1
+
+                    if (ii + offset) < len(self.bytes):
+                        date_diff = abs(self.dates[ii] - self.dates[ii+offset])
+                        if abs((self.bytes[ii] - self.bytes[ii+offset])/self.bytes[ii]) < (1-self.vandalism_similarity):
+                            self.vandalism_flag[ii] = True
+                            self.vandalism_flag[ii+offset] = True
+                            continue
+
+                        if date_diff > self.vandalism_response_limit:
+                            break
+
+                    if (ii - offset) < len(self.bytes):
+                        date_diff = abs(self.dates[ii] - self.dates[ii-offset])
+                        if abs((self.bytes[ii] - self.bytes[ii-offset])/self.bytes[ii]) < (1-self.vandalism_similarity):
+                            self.vandalism_flag[ii] = True
+                            self.vandalism_flag[ii-offset] = True
+                            continue
+
+                        if date_diff > self.vandalism_response_limit:
+                            break
+
+                    offset += 1
+
 
     def _create_ticks(self):
 
@@ -132,11 +175,12 @@ class Getter:
         plt.style.use('dark_background')
         fig0, ax0 = plt.subplots()
         for d, b in zip(self.dates, self.bytes):
-            ax0.scatter(d, abs(b), c=color_list[b > 0], s=4)
+            ax0.scatter(d, abs(b), c=color_list[b > 0], s=4, alpha=0.5)
+        ax0.set_yscale('log')
         ticks, labels = self._create_ticks()
         ax0.set_xticks(ticks)
         ax0.set_xticklabels(labels, rotation=45)
-        ax0.set_ylim(bottom=0)
+        ax0.set_ylim(bottom=1)
         ax0.set_ylabel("Edit Size (bytes)")
         ax0.set_title(self.title)
 
@@ -170,6 +214,3 @@ class ErrorLog:
         assert len(self.idxs)==len(self.children)==len(self.byte_strs)==len(self.datetimes), "ErrorLog lists are not the same length"
         return len(self.idxs)
 
-class Edit:
-
-    def __init__(self):
