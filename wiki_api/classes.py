@@ -15,7 +15,7 @@ class Getter:
 
     def __init__(self, page_title, request_size=1000):
 
-        self.n_bins = 25
+        self.n_bins = 15
         self.edits_per_bin = 50
         self.vandalism_response_limit = 2
         self.vandalism_threshold = 2000
@@ -98,7 +98,7 @@ class Getter:
 
                 except ValueError:
                     self.error_log.add(idx, child, byte_str, datetime_str)
-        self.n_bins = int(len(self.bytes)/self.edits_per_bin)
+        #self.n_bins = int(len(self.bytes)/self.edits_per_bin)
 
     def _format_dates(self):
         self.dates = [datestr2num(rd) for rd in self.raw_dates]

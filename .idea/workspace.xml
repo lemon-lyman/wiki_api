@@ -3,10 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="924b9449-a4d5-4084-a2aa-02eed668474a" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/figs/1992_Los_Angeles_riots.png" beforeDir="false" afterPath="$PROJECT_DIR$/figs/1992_Los_Angeles_riots.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/figs/SpaceX.png" beforeDir="false" afterPath="$PROJECT_DIR$/figs/SpaceX.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wiki_api/classes.py" beforeDir="false" afterPath="$PROJECT_DIR$/wiki_api/classes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wiki_api/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/wiki_api/main.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -54,7 +50,9 @@
       <updated>1591065256245</updated>
       <workItem from="1591065261412" duration="18916000" />
       <workItem from="1591477437473" duration="9298000" />
-      <workItem from="1591494231595" duration="6605000" />
+      <workItem from="1591494231595" duration="7258000" />
+      <workItem from="1591671077992" duration="3733000" />
+      <workItem from="1592545560391" duration="851000" />
     </task>
     <servers />
   </component>
@@ -66,7 +64,9 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
           </value>
         </entry>
       </map>
